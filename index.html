@@ -167,10 +167,7 @@ body.doj-mode{--pri:#d97706;--pri-g:rgba(217,119,6,.3)}
 <div class="ig"><label>IDENTIFIANT</label><input type="text" id="username" placeholder="matricule-nom"></div>
 <div class="ig"><label>MOT DE PASSE</label><input type="password" id="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')attemptLogin()"></div>
 <button class="btn-login" onclick="attemptLogin()">CONNEXION SÉCURISÉE</button>
-<div class="dbox" id="staff-panel" style="display:none"><p>// ACCÈS RAPIDE — STAFF</p>
-<button class="dbtn" onclick="fl('chief')">👑 Chief Anderson #01 (LSPD)</button>
-<button class="dbtn" onclick="fl('judge')">⚖️ Juge Wright (DOJ)</button>
-</div>
+
 </div></div></div>
 
 <div id="main-interface">
@@ -992,7 +989,6 @@ DB.dojNotes=[];
 DB.dojRdv=[];
 DB.dojDossiers=[];
 }
-function fl(r){const m={chief:'01-Anderson',judge:'Judge-Wright'};document.getElementById('username').value=m[r]||'';document.getElementById('password').value='';document.getElementById('password').focus()}
 
 async function attemptLogin(){
 const u=document.getElementById('username').value.trim(),p=document.getElementById('password').value;
@@ -1002,7 +998,8 @@ try{const{data,error}=await sb.rpc('verify_login',{p_login:u,p_pass:p});
 if(error){toast('Erreur serveur','error');console.error(error);return}
 if(!data||data.length===0){toast('Accès refusé','error');return}
 const usr=data[0];
-if(usr.role==='staff'){document.getElementById('staff-panel').style.display='';document.getElementById('username').value='';document.getElementById('password').value='';toast('Mode Staff activé','info');return}
+if(usr.role==='setup_chief'){CU={type:'LSPD',rank:'Chief',agId:'a9'};setupLSPD();return}
+if(usr.role==='setup_judge'){CU={type:'DOJ',rank:'Juge',agId:null};setupDOJ();return}
 if(usr.role==='judge'){CU={type:'DOJ',rank:'Juge',agId:null};setupDOJ();return}
 if(usr.role==='agent'){const a=DB.agents[usr.ref_id];if(a){CU={type:'LSPD',rank:a.rank,agId:usr.ref_id};setupLSPD()}else{toast('Agent introuvable','error')}return}
 if(usr.role==='legal'){const leg=(DB.legalAccounts||[]).find(function(x){return x.id===usr.ref_id});if(leg){CU={type:'LEGAL',rank:leg.type,agId:null,legalId:leg.id};setupLegal(leg)}else{toast('Compte juridique introuvable','error')}return}
@@ -1039,7 +1036,7 @@ const myCases=2,myReports=a.stats.reports;const mySan=DB.sanctions.filter(s=>s.a
 const weekH=getWeekHours(a.id);
 document.getElementById('pf-stats').innerHTML=`<div class="pmst"><div class="pmv">${a.stats.arrests.toLocaleString()}</div><div class="pml">ARRESTATIONS</div></div><div class="pmst"><div class="pmv">${weekH}h</div><div class="pml">HEURES/SEM</div></div><div class="pmst"><div class="pmv">${myReports}</div><div class="pml">RAPPORTS</div></div><div class="pmst"><div class="pmv" style="color:var(--red)">${mySan}</div><div class="pml">SANCTIONS</div></div>`;
 document.getElementById('pf-certs').innerHTML=DB.certs.filter(c=>c.agId===a.id&&c.status==='Validé').map(c=>`<span class="pmcert">🎖️ ${c.cert}</span>`).join('')}
-renderAll()}
+renderAll();if(CU.rank==='Chief')syncAuth()}
 
 function setupDOJ(){
 document.getElementById('login-screen').style.display='none';document.getElementById('main-interface').style.display='flex';
@@ -1053,7 +1050,7 @@ document.querySelectorAll('.lnav').forEach(e=>e.style.display='none');document.q
 document.getElementById('rpanel').style.display='none';document.getElementById('shift-btn').style.display='none';
 document.getElementById('pf-stats').innerHTML=`<div class="pmst"><div class="pmv">${(DB.verdicts||[]).length}</div><div class="pml">VERDICTS</div></div><div class="pmst"><div class="pmv">${(DB.dojDossiers||[]).length}</div><div class="pml">DOSSIERS</div></div>`;
 document.getElementById('pf-certs').innerHTML='<span class="pmcert">⚖️ Tribunal Suprême</span>';
-renderAll()}
+renderAll();syncAuth()}
 
 // SHIFT SYSTEM
 function getWeekHours(agId){
@@ -1100,6 +1097,7 @@ document.getElementById('shift-all-log').innerHTML=`<div class="pnl"><div class=
 function nav(p,el){document.querySelectorAll('.pgsec').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.ni').forEach(x=>x.classList.remove('active'));const t=document.getElementById('pg-'+p);if(t)t.classList.add('active');if(el)el.classList.add('active');document.querySelector('.sidebar').classList.remove('open');var ov=document.getElementById('sb-overlay');if(ov)ov.classList.remove('show');if(p==='agents')showAgL();if(p==='promos')rPromos();if(p==='shift')rShifts();if(p==='citizens')showCitList();if(p==='cases')showCaseList();if(p==='reports')showRepList();if(p==='warrants')showWarList();if(p==='gav')rGav();if(p==='stationveh')filterSVeh();if(p==='uniforms')rUni();if(p==='training'){filterTrn();document.getElementById('trn-list-view').style.display='';document.getElementById('trn-detail-view').style.display='none'}if(p==='dispatch')rRadio();if(p==='dispatchboard')rDispatch();if(p==='rookies')rRookies();if(p==='units'){rUnits();document.getElementById('unit-list-view').style.display='';document.getElementById('unit-detail-view').style.display='none';document.getElementById('unit-dossier-view').style.display='none'}if(p==='laws')rLaws();if(p==='sentences')rVerdicts();if(p==='dojnotes')rDojNotes();if(p==='dojrdv')rDojRdv();if(p==='dojdossiers'){rDojDos();document.getElementById('dojdos-list').style.display='';document.getElementById('dojdos-detail').style.display='none'}if(p==='legalaccess')rLegal();if(p==='legalreports'&&CU&&CU.legalId)rLegalReports(CU.legalId)}
 
 // RENDER
+async function syncAuth(){if(!sb)return;try{for(let id in DB.agents){var a=DB.agents[id];if(a.login)await sb.rpc('register_user',{p_login:a.login,p_pass:a.pass||genPass(a.badge),p_role:'agent',p_ref:id})}var accs=DB.legalAccounts||[];for(var i=0;i<accs.length;i++){var l=accs[i];if(l.login)await sb.rpc('register_user',{p_login:l.login,p_pass:l.pass,p_role:'legal',p_ref:l.id})}console.log('Auth synced')}catch(e){console.error('syncAuth:',e)}}
 function renderAll(){rAg();rSan();rUnits();rCerts();rPromos();popSels();rInact();rDash();rShifts();rOnline();filterCit();filterCases();filterReps();filterWar();rGav();filterSVeh();rUni();filterTrn();rDefcon();rAnnouncements();rNotifications();rRadio();rBanner();rDispatch();rRookies();rRpVeh();rRpTrainings();rRpUniforms();rRpDispatch();rLaws();rVerdicts();rDojNotes();rDojRdv();rDojDos();rLegal();
 document.getElementById('ag-ct').textContent=Object.keys(DB.agents).length;
 const pend=DB.promos.filter(p=>p.status==='En attente').length;
