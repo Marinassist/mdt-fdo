@@ -566,13 +566,6 @@ body.readonly-mode .sbar .btn-p:not([onclick*="showPlainteForm"]),body.readonly-
 <div class="fg" style="margin-bottom:12px"><label>OBSERVATIONS DU JUGE</label><textarea id="vf-obs" style="min-height:80px"></textarea></div>
 <div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn btn-o" onclick="document.getElementById('verdict-modal').style.display='none'">ANNULER</button><button class="btn btn-p" onclick="saveVerdict()">ENREGISTRER</button></div>
 </div></div>
-<div class="fr"><div class="fg"><label>VERDICT</label><select id="vf-verdict"><option>Coupable</option><option>Non coupable</option><option>Sursis</option><option>Relaxe</option><option>Non-lieu</option></select></div><div class="fg"><label>DATE</label><input type="date" id="vf-date"></div></div>
-<div class="fr"><div class="fg"><label>CHARGES</label><input id="vf-charges" placeholder="PC-101 Homicide ; PC-501 Arme"></div><div class="fg"><label>PEINE</label><input id="vf-peine" placeholder="18 mois, Perpétuité..."></div></div>
-<div class="fr"><div class="fg"><label>AMENDE</label><input id="vf-amende" placeholder="$50,000"></div><div class="fg"><label>MESURES</label><input id="vf-mesures" placeholder="Retrait permis, bracelet..."></div></div>
-<div class="fg" style="margin-bottom:12px"><label>OBSERVATIONS DU JUGE</label><textarea id="vf-obs" style="min-height:80px"></textarea></div>
-<div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn btn-o" onclick="document.getElementById('verdict-modal').style.display='none'">ANNULER</button><button class="btn btn-p" onclick="saveVerdict()">ENREGISTRER</button></div>
-</div></div>
-</div>
 <!-- DOJ NOTES -->
 <div class="pgsec" id="pg-dojnotes"><div class="pt">📝 NOTES DOJ</div><div class="ps">// BLOC-NOTES JUDICIAIRE</div>
 <div class="sbar"><button class="btn btn-p" onclick="showDojNoteForm()">+ NOUVELLE NOTE</button></div>
@@ -623,7 +616,6 @@ body.readonly-mode .sbar .btn-p:not([onclick*="showPlainteForm"]),body.readonly-
 <div class="fg" style="margin-bottom:12px"><label>CONTENU</label><textarea id="subdos-content-f" style="min-height:140px"></textarea></div>
 <div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn btn-o" onclick="document.getElementById('subdos-modal').style.display='none'">ANNULER</button><button class="btn btn-p" onclick="saveSubDos()">ENREGISTRER</button></div>
 </div></div>
-</div>
 <div class="pgsec" id="pg-plaintes"><div class="pt">📋 DÉPÔTS DE PLAINTE</div><div class="ps">// PLAINTES — PROCÉDURES JUDICIAIRES</div>
 <div class="sbar"><input class="sinp" placeholder="Rechercher une plainte..." id="plainte-s" oninput="filterPlaintes()" style="flex:1"><button class="btn btn-p" onclick="showPlainteForm()">+ NOUVELLE PLAINTE</button></div>
 <div class="sr4" id="plainte-stats"></div>
