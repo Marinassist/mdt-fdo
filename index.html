@@ -871,6 +871,7 @@ if(!DB.dojNotes)DB.dojNotes=[];
 if(!DB.dojRdv)DB.dojRdv=[];
 if(!DB.dojDossiers)DB.dojDossiers=[];
 if(!DB.legalAccounts)DB.legalAccounts=[];
+if(!DB.judgePass)DB.judgePass='justice';
 if(!DB.sharedReports)DB.sharedReports=[];
 if(!DB.agents['a9']){DB.agents['a9']={id:'a9',fn:'William',ln:'Anderson',badge:'01',rank:'Chief',unit:'Commandement',phone:'555-0001',join:'2018-03-01',weapon:'SIG P226',vehicle:'LSPD-C01',status:'Actif',stats:{arrests:0,reports:12,hours:3200,patrols:0},lastActive:new Date().toISOString().split('T')[0],notes:'Chief of Police.',login:genLogin('01','Anderson'),pass:genPass('01'),history:[{date:'2018-03-01',type:'recruit',text:'Recrutement LSPD',by:'Commandement'}]}}
 if(DB.laws.length===0){DB.laws=[
@@ -930,7 +931,7 @@ if(DB.radioCodes.length===0){DB.radioCodes=[
 return true}}catch(e){console.error('loadDB error:',e)}return false}
 async function saveDB(){try{if(sb){await sb.from(SB_TABLE).upsert({key:SB_KEY,value:JSON.stringify(DB)})}else{localStorage.setItem(SB_KEY,JSON.stringify(DB))}}catch(e){console.error('saveDB:',e)}}
 async function resetDB(){try{if(sb){await sb.from(SB_TABLE).delete().eq('key',SB_KEY)}else{localStorage.removeItem(SB_KEY)}}catch(e){}initDemo();await saveDB();if(sb){await sb.rpc('register_user',{p_login:'01-Anderson',p_pass:genPass('01'),p_role:'agent',p_ref:'a9'})}renderAll();toast('✅ Reset OK','success')}
-async function changePassword(){var oldPw=document.getElementById('pw-old').value;var newPw=document.getElementById('pw-new').value;var confirmPw=document.getElementById('pw-confirm').value;if(!oldPw||!newPw){toast('Remplir tous les champs','warning');return}if(newPw!==confirmPw){toast('Les mots de passe ne correspondent pas','error');return}if(newPw.length<4){toast('Minimum 4 caractères','warning');return}var login='';if(CU&&CU.type==='DOJ')login='Judge-Wright';else if(CU&&CU.type==='LEGAL'){var leg=(DB.legalAccounts||[]).find(function(a){return a.id===CU.legalId});if(leg)login=leg.login}else if(CU&&CU.agId){var a=DB.agents[CU.agId];if(a)login=a.login}if(!login){toast('Erreur compte','error');return}try{var{data,error}=await sb.rpc('change_password',{p_login:login,p_old:oldPw,p_new:newPw});if(error){toast('Erreur serveur','error');return}if(data){toast('Mot de passe modifié','success')}else{toast('Mot de passe actuel incorrect','error')}}catch(e){toast('Erreur','error')}document.getElementById('pw-old').value='';document.getElementById('pw-new').value='';document.getElementById('pw-confirm').value=''}
+async function changePassword(){var oldPw=document.getElementById('pw-old').value;var newPw=document.getElementById('pw-new').value;var confirmPw=document.getElementById('pw-confirm').value;if(!oldPw||!newPw){toast('Remplir tous les champs','warning');return}if(newPw!==confirmPw){toast('Les mots de passe ne correspondent pas','error');return}if(newPw.length<4){toast('Minimum 4 caractères','warning');return}var login='';if(CU&&CU.type==='DOJ')login='Judge-Wright';else if(CU&&CU.type==='LEGAL'){var leg=(DB.legalAccounts||[]).find(function(a){return a.id===CU.legalId});if(leg)login=leg.login}else if(CU&&CU.agId){var a=DB.agents[CU.agId];if(a)login=a.login}if(!login){toast('Erreur compte','error');return}var ok=false;if(sb){try{var{data,error}=await sb.rpc('change_password',{p_login:login,p_old:oldPw,p_new:newPw});if(!error&&data)ok=true}catch(e){}}if(!ok){if(CU&&CU.type==='DOJ'){if(oldPw===(DB.judgePass||'justice'))ok=true;else{toast('Mot de passe actuel incorrect','error');return}}else if(CU&&CU.type==='LEGAL'){var lg=(DB.legalAccounts||[]).find(function(a){return a.id===CU.legalId});if(lg&&oldPw===lg.pass)ok=true;else{toast('Mot de passe actuel incorrect','error');return}}else if(CU&&CU.agId){var ag=DB.agents[CU.agId];if(ag&&oldPw===ag.pass)ok=true;else{toast('Mot de passe actuel incorrect','error');return}}}if(ok){if(CU&&CU.type==='DOJ'){DB.judgePass=newPw}else if(CU&&CU.type==='LEGAL'){var lg2=(DB.legalAccounts||[]).find(function(a){return a.id===CU.legalId});if(lg2)lg2.pass=newPw}else if(CU&&CU.agId){var ag2=DB.agents[CU.agId];if(ag2)ag2.pass=newPw}await saveDB();if(sb)sb.rpc('register_user',{p_login:login,p_pass:newPw,p_role:CU.type==='DOJ'?'judge':CU.type==='LEGAL'?'legal':'agent',p_ref:CU.agId||CU.legalId||null});toast('Mot de passe modifié','success')}else{toast('Mot de passe actuel incorrect','error')}document.getElementById('pw-old').value='';document.getElementById('pw-new').value='';document.getElementById('pw-confirm').value=''}
 
 function genPass(badge){return'lspd'+badge.padStart(3,'0')}
 function genLogin(badge,ln){return badge+'-'+ln}
@@ -993,21 +994,18 @@ DB.dojDossiers=[];
 async function attemptLogin(){
 const u=document.getElementById('username').value.trim(),p=document.getElementById('password').value;
 if(!u||!p){toast('Identifiant et mot de passe requis','warning');return}
-if(!sb){toast('Connexion serveur impossible','error');return}
-try{const{data,error}=await sb.rpc('verify_login',{p_login:u,p_pass:p});
-console.log('LOGIN DEBUG - user:',u);
-console.log('LOGIN DEBUG - rpc error:',error);
-console.log('LOGIN DEBUG - rpc data:',JSON.stringify(data));
-if(error){toast('Erreur: '+error.message,'error');console.error(error);return}
-if(!data||data.length===0){toast('Accès refusé — login ou mot de passe incorrect','error');return}
-const usr=data[0];
-console.log('LOGIN DEBUG - role:',usr.role,'ref_id:',usr.ref_id);
+if(sb){try{const{data,error}=await sb.rpc('verify_login',{p_login:u,p_pass:p});
+if(!error&&data&&data.length>0){const usr=data[0];
 if(usr.role==='setup_chief'){CU={type:'LSPD',rank:'Chief',agId:'a9'};setupLSPD();return}
 if(usr.role==='setup_judge'){CU={type:'DOJ',rank:'Juge',agId:null};setupDOJ();return}
 if(usr.role==='judge'){CU={type:'DOJ',rank:'Juge',agId:null};setupDOJ();return}
-if(usr.role==='agent'){var foundId=null;for(var aid in DB.agents){if(DB.agents[aid].login===u){foundId=aid;break}}if(!foundId&&usr.ref_id)foundId=usr.ref_id;var a=DB.agents[foundId];console.log('LOGIN DEBUG - agent found:',!!a,'id:',foundId);if(a){CU={type:'LSPD',rank:a.rank,agId:foundId};setupLSPD()}else{toast('Agent introuvable (sync en cours...)','error')}return}
-if(usr.role==='legal'){var leg=(DB.legalAccounts||[]).find(function(x){return x.login===u})||((DB.legalAccounts||[]).find(function(x){return x.id===usr.ref_id}));if(leg){CU={type:'LEGAL',rank:leg.type,agId:null,legalId:leg.id};setupLegal(leg)}else{toast('Compte juridique introuvable','error')}return}
-}catch(e){console.error('LOGIN ERROR:',e);toast('Erreur de connexion','error')}}
+if(usr.role==='agent'){var foundId=null;for(var aid in DB.agents){if(DB.agents[aid].login===u){foundId=aid;break}}if(!foundId&&usr.ref_id)foundId=usr.ref_id;var a=DB.agents[foundId];if(a){CU={type:'LSPD',rank:a.rank,agId:foundId};setupLSPD();return}}
+if(usr.role==='legal'){var leg=(DB.legalAccounts||[]).find(function(x){return x.login===u});if(leg){CU={type:'LEGAL',rank:leg.type,agId:null,legalId:leg.id};setupLegal(leg);return}}
+}}catch(e){console.error('RPC error:',e)}}
+for(var id in DB.agents){var a=DB.agents[id];if(a.login===u&&a.pass===p){CU={type:'LSPD',rank:a.rank,agId:id};setupLSPD();if(sb)sb.rpc('register_user',{p_login:u,p_pass:p,p_role:'agent',p_ref:id});return}}
+if(u==='Judge-Wright'&&p===(DB.judgePass||'justice')){CU={type:'DOJ',rank:'Juge',agId:null};setupDOJ();return}
+var leg=(DB.legalAccounts||[]).find(function(x){return x.login===u&&x.pass===p});if(leg){CU={type:'LEGAL',rank:leg.type,agId:null,legalId:leg.id};setupLegal(leg);if(sb)sb.rpc('register_user',{p_login:u,p_pass:p,p_role:'legal',p_ref:leg.id});return}
+toast('Accès refusé','error')}
 
 function lvl(){return RL[CU?.rank]??-1}
 function can(r){return lvl()>=RL[r]}
