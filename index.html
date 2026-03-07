@@ -8,6 +8,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--pri:#2563eb;--pri-g:rgba(37,99,235,.3);--d9:#070b14;--d8:#0c1322;--d7:#111b2e;--d6:#1a2744;--d5:#243555;--brd:#1e3055;--txt:#c8d6e5;--dim:#5a7390;--red:#ef4444;--grn:#22c55e;--wrn:#f59e0b}
+body.cb-protanopia{--red:#e8a317;--grn:#56b4e9;--wrn:#cc79a7;--pri:#0072b2}
+body.cb-deuteranopia{--red:#d55e00;--grn:#56b4e9;--wrn:#e69f00;--pri:#0072b2}
+body.cb-tritanopia{--red:#d55e00;--grn:#009e73;--wrn:#cc79a7;--pri:#56b4e9}
+body.cb-highcontrast{--red:#ff0000;--grn:#00ff00;--wrn:#ffff00;--pri:#00bfff;--txt:#ffffff;--dim:#aaaaaa;--d9:#000000;--d8:#0a0a0a;--d7:#141414;--d6:#1e1e1e;--brd:#444444}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Rajdhani',sans-serif;background:var(--d9);color:var(--txt);height:100vh;overflow:hidden}
 body::after{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.03) 2px,rgba(0,0,0,.03) 4px);pointer-events:none;z-index:9999}
@@ -70,10 +74,10 @@ body::after{content:'';position:fixed;top:0;left:0;width:100%;height:100%;backgr
 .dt td{padding:8px 12px;font-size:.82rem;border-bottom:1px solid rgba(30,48,85,.3)}.dt tr:hover td{background:rgba(37,99,235,.03)}
 .dt tr.click{cursor:pointer}.dt tr.click:hover td{background:rgba(37,99,235,.06)}
 .bdg{display:inline-block;padding:2px 8px;border-radius:2px;font-size:.66rem;font-family:'Share Tech Mono',monospace;letter-spacing:1px}
-.bdg-r{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.3)}
-.bdg-g{background:rgba(34,197,94,.15);color:var(--grn);border:1px solid rgba(34,197,94,.3)}
-.bdg-w{background:rgba(245,158,11,.15);color:var(--wrn);border:1px solid rgba(245,158,11,.3)}
-.bdg-b{background:rgba(37,99,235,.15);color:var(--pri);border:1px solid rgba(37,99,235,.3)}
+.bdg-r{background:color-mix(in srgb,var(--red) 15%,transparent);color:var(--red);border:1px solid color-mix(in srgb,var(--red) 30%,transparent)}
+.bdg-g{background:color-mix(in srgb,var(--grn) 15%,transparent);color:var(--grn);border:1px solid color-mix(in srgb,var(--grn) 30%,transparent)}
+.bdg-w{background:color-mix(in srgb,var(--wrn) 15%,transparent);color:var(--wrn);border:1px solid color-mix(in srgb,var(--wrn) 30%,transparent)}
+.bdg-b{background:color-mix(in srgb,var(--pri) 15%,transparent);color:var(--pri);border:1px solid color-mix(in srgb,var(--pri) 30%,transparent)}
 .bdg-n{background:rgba(90,115,144,.15);color:var(--dim);border:1px solid rgba(90,115,144,.3)}
 .bdg-p{background:rgba(168,85,247,.15);color:#a855f7;border:1px solid rgba(168,85,247,.3)}
 .sbar{display:flex;gap:8px;margin-bottom:16px}
@@ -662,6 +666,36 @@ body.readonly-mode .sbar .btn-p,body.readonly-mode .btn[onclick*="showRepForm"],
 <div class="fr"><div class="fg"><label>MOT DE PASSE ACTUEL</label><input type="password" id="pw-old"></div><div class="fg"><label>NOUVEAU MOT DE PASSE</label><input type="password" id="pw-new"></div><div class="fg"><label>CONFIRMER</label><input type="password" id="pw-confirm"></div></div>
 <button class="btn btn-p btn-sm" style="margin-top:8px" onclick="changePassword()">MODIFIER LE MOT DE PASSE</button>
 </div></div>
+<div class="pnl"><div class="pnl-h"><span>👁️ ACCESSIBILITÉ — DALTONISME</span></div><div class="pnl-b">
+<p style="font-size:.82rem;color:var(--dim);margin-bottom:12px">Adaptez les couleurs du MDT selon votre type de vision.</p>
+<div style="display:flex;flex-direction:column;gap:8px" id="cb-options">
+<label style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--d9);border:1px solid var(--brd);border-radius:4px;cursor:pointer" onclick="setCbMode('')">
+<input type="radio" name="cbmode" value="" checked style="accent-color:var(--pri)">
+<div><strong style="font-size:.84rem">Vision normale</strong><div style="font-size:.72rem;color:var(--dim)">Couleurs par défaut</div></div>
+<div style="display:flex;gap:4px;margin-left:auto"><span style="width:16px;height:16px;border-radius:50%;background:#ef4444"></span><span style="width:16px;height:16px;border-radius:50%;background:#22c55e"></span><span style="width:16px;height:16px;border-radius:50%;background:#f59e0b"></span><span style="width:16px;height:16px;border-radius:50%;background:#2563eb"></span></div>
+</label>
+<label style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--d9);border:1px solid var(--brd);border-radius:4px;cursor:pointer" onclick="setCbMode('cb-protanopia')">
+<input type="radio" name="cbmode" value="cb-protanopia" style="accent-color:var(--pri)">
+<div><strong style="font-size:.84rem">Protanopie</strong><div style="font-size:.72rem;color:var(--dim)">Difficulté à voir le rouge</div></div>
+<div style="display:flex;gap:4px;margin-left:auto"><span style="width:16px;height:16px;border-radius:50%;background:#e8a317"></span><span style="width:16px;height:16px;border-radius:50%;background:#56b4e9"></span><span style="width:16px;height:16px;border-radius:50%;background:#cc79a7"></span><span style="width:16px;height:16px;border-radius:50%;background:#0072b2"></span></div>
+</label>
+<label style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--d9);border:1px solid var(--brd);border-radius:4px;cursor:pointer" onclick="setCbMode('cb-deuteranopia')">
+<input type="radio" name="cbmode" value="cb-deuteranopia" style="accent-color:var(--pri)">
+<div><strong style="font-size:.84rem">Deutéranopie</strong><div style="font-size:.72rem;color:var(--dim)">Difficulté à voir le vert</div></div>
+<div style="display:flex;gap:4px;margin-left:auto"><span style="width:16px;height:16px;border-radius:50%;background:#d55e00"></span><span style="width:16px;height:16px;border-radius:50%;background:#56b4e9"></span><span style="width:16px;height:16px;border-radius:50%;background:#e69f00"></span><span style="width:16px;height:16px;border-radius:50%;background:#0072b2"></span></div>
+</label>
+<label style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--d9);border:1px solid var(--brd);border-radius:4px;cursor:pointer" onclick="setCbMode('cb-tritanopia')">
+<input type="radio" name="cbmode" value="cb-tritanopia" style="accent-color:var(--pri)">
+<div><strong style="font-size:.84rem">Tritanopie</strong><div style="font-size:.72rem;color:var(--dim)">Difficulté à voir le bleu/jaune</div></div>
+<div style="display:flex;gap:4px;margin-left:auto"><span style="width:16px;height:16px;border-radius:50%;background:#d55e00"></span><span style="width:16px;height:16px;border-radius:50%;background:#009e73"></span><span style="width:16px;height:16px;border-radius:50%;background:#cc79a7"></span><span style="width:16px;height:16px;border-radius:50%;background:#56b4e9"></span></div>
+</label>
+<label style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--d9);border:1px solid var(--brd);border-radius:4px;cursor:pointer" onclick="setCbMode('cb-highcontrast')">
+<input type="radio" name="cbmode" value="cb-highcontrast" style="accent-color:var(--pri)">
+<div><strong style="font-size:.84rem">Contraste élevé</strong><div style="font-size:.72rem;color:var(--dim)">Couleurs vives pour tous</div></div>
+<div style="display:flex;gap:4px;margin-left:auto"><span style="width:16px;height:16px;border-radius:50%;background:#ff0000"></span><span style="width:16px;height:16px;border-radius:50%;background:#00ff00"></span><span style="width:16px;height:16px;border-radius:50%;background:#ffff00"></span><span style="width:16px;height:16px;border-radius:50%;background:#00bfff"></span></div>
+</label>
+</div>
+</div></div>
 <div id="chief-settings" style="display:none"><div class="pnl"><div class="pnl-h"><span>⭐ ADMINISTRATION (CAPITAINE / CHIEF)</span></div><div class="pnl-b"><p style="font-size:.82rem;color:var(--dim);margin-bottom:12px">Zone réservée au haut commandement.</p><button class="btn btn-d btn-sm" onclick="resetDB()">⚠️ RESET TOUTES LES DONNÉES</button></div></div></div>
 </div>
 
@@ -1100,6 +1134,9 @@ document.getElementById('shift-week-log').innerHTML=`<div class="pnl"><div class
 document.getElementById('shift-all-log').innerHTML=`<div class="pnl"><div class="pnl-h"><span>TOUT L'HISTORIQUE</span></div><div class="pnl-b" style="padding:0">${logHtml(myShifts.slice(0,30))}</div></div>`}
 
 // NAV
+function setCbMode(mode){var modes=['cb-protanopia','cb-deuteranopia','cb-tritanopia','cb-highcontrast'];modes.forEach(function(m){document.body.classList.remove(m)});if(mode)document.body.classList.add(mode);localStorage.setItem('mdt-cb-mode',mode||'');var radios=document.querySelectorAll('input[name="cbmode"]');radios.forEach(function(r){r.checked=r.value===mode});toast(mode?'Mode accessibilité activé':'Vision normale','success')}
+function loadCbMode(){var mode=localStorage.getItem('mdt-cb-mode');if(mode){document.body.classList.add(mode);var radios=document.querySelectorAll('input[name="cbmode"]');radios.forEach(function(r){r.checked=r.value===mode})}}
+
 function nav(p,el){document.querySelectorAll('.pgsec').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.ni').forEach(x=>x.classList.remove('active'));const t=document.getElementById('pg-'+p);if(t)t.classList.add('active');if(el)el.classList.add('active');document.querySelector('.sidebar').classList.remove('open');var ov=document.getElementById('sb-overlay');if(ov)ov.classList.remove('show');if(p==='agents')showAgL();if(p==='promos')rPromos();if(p==='shift')rShifts();if(p==='citizens')showCitList();if(p==='cases')showCaseList();if(p==='reports')showRepList();if(p==='warrants')showWarList();if(p==='gav')rGav();if(p==='stationveh')filterSVeh();if(p==='uniforms')rUni();if(p==='training'){filterTrn();document.getElementById('trn-list-view').style.display='';document.getElementById('trn-detail-view').style.display='none'}if(p==='dispatch')rRadio();if(p==='dispatchboard')rDispatch();if(p==='rookies')rRookies();if(p==='units'){rUnits();document.getElementById('unit-list-view').style.display='';document.getElementById('unit-detail-view').style.display='none';document.getElementById('unit-dossier-view').style.display='none'}if(p==='laws')rLaws();if(p==='sentences')rVerdicts();if(p==='dojnotes')rDojNotes();if(p==='dojrdv')rDojRdv();if(p==='dojdossiers'){rDojDos();document.getElementById('dojdos-list').style.display='';document.getElementById('dojdos-detail').style.display='none'}if(p==='legalaccess')rLegal();if(p==='legalreports'&&CU&&CU.legalId)rLegalReports(CU.legalId)}
 
 // RENDER
@@ -1922,7 +1959,7 @@ function uCk(){document.getElementById('clock').textContent=new Date().toLocaleT
 setInterval(uCk,1000);uCk();
 setInterval(function(){rNotifications();var pg=document.getElementById('pg-gav');if(pg&&pg.classList.contains('active'))rGav()},30000);
 
-(async function(){const ok=await loadDB();if(!ok){var hasRemote=false;if(sb){try{var chk=await sb.from(SB_TABLE).select('key').eq('key',SB_KEY).single();if(chk.data)hasRemote=true}catch(e){}}if(!hasRemote){initDemo();await saveDB()}}document.getElementById('loading').classList.add('hide');setTimeout(()=>document.getElementById('loading').style.display='none',600)})();
+(async function(){const ok=await loadDB();if(!ok){var hasRemote=false;if(sb){try{var chk=await sb.from(SB_TABLE).select('key').eq('key',SB_KEY).single();if(chk.data)hasRemote=true}catch(e){}}if(!hasRemote){initDemo();await saveDB()}}loadCbMode();document.getElementById('loading').classList.add('hide');setTimeout(()=>document.getElementById('loading').style.display='none',600)})();
 </script>
 <div id="toast-container"></div>
 </body>
