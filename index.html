@@ -624,22 +624,6 @@ body.readonly-mode .sbar .btn-p:not([onclick*="showPlainteForm"]),body.readonly-
 </div>
 
 <!-- Plainte Modal -->
-<div id="plainte-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:9999;align-items:center;justify-content:center">
-<div style="background:var(--d7);border:1px solid var(--brd);padding:24px;border-radius:8px;width:660px;max-width:95vw;max-height:90vh;overflow-y:auto">
-<h3 style="font-family:'Orbitron',monospace;font-size:.8rem;margin-bottom:12px" id="pl-form-t">NOUVELLE PLAINTE</h3><input type="hidden" id="plf-eid">
-<div class="fr"><div class="fg"><label>PLAIGNANT</label><input id="plf-plaignant" placeholder="Nom du plaignant"></div><div class="fg"><label>MIS EN CAUSE</label><input id="plf-accuse" placeholder="Nom du mis en cause"></div></div>
-<div class="fr"><div class="fg"><label>TYPE</label><select id="plf-type"><option>Plainte civile</option><option>Plainte pénale</option><option>Main courante</option><option>Signalement</option></select></div><div class="fg"><label>STATUT</label><select id="plf-status"><option>Déposée</option><option>En instruction</option><option>Transmise LSPD</option><option>Transmise DOJ</option><option>Classée</option><option>Jugée</option></select></div><div class="fg"><label>DATE</label><input type="date" id="plf-date"></div></div>
-<div class="fg" style="margin-bottom:8px"><label>DESCRIPTION DES FAITS</label><textarea id="plf-desc" style="min-height:100px" placeholder="Détail des faits reprochés..."></textarea></div>
-<div class="fg" style="margin-bottom:8px"><label>CHEFS D'INCULPATION</label>
-<input id="plf-charges-search" placeholder="🔍 Rechercher un article..." oninput="filterPlainteCharges()" style="margin-bottom:6px">
-<div id="plf-charges-list" style="max-height:140px;overflow-y:auto;border:1px solid var(--brd);border-radius:4px;background:var(--d9);padding:4px"></div>
-<div id="plf-charges-selected" style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px"></div>
-</div>
-<div class="fr"><div class="fg"><label>DOSSIER LIÉ</label><select id="plf-case"><option value="">— Aucun —</option></select></div><div class="fg"><label>RAPPORTS LIÉS</label><select id="plf-reps" multiple style="min-height:60px;font-size:.78rem"></select></div></div>
-<div class="fr"><div class="fg"><label>MANDATS LIÉS</label><select id="plf-warrants" multiple style="min-height:60px;font-size:.78rem"></select></div><div class="fg"><label>DESTINATAIRES</label><select id="plf-dest" multiple style="min-height:60px;font-size:.78rem"></select><div style="font-size:.62rem;color:var(--dim);margin-top:2px">Ctrl+clic — Juges, Procureurs, Avocats, LSPD</div></div></div>
-<div class="fg" style="margin-bottom:12px"><label>NOTES / DEMANDES</label><textarea id="plf-notes" style="min-height:60px" placeholder="Demandes particulières, contexte..."></textarea></div>
-<div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn btn-o" onclick="document.getElementById('plainte-modal').style.display='none'">ANNULER</button><button class="btn btn-p" onclick="savePlainte()">ENREGISTRER</button></div>
-</div></div>
 
 
 <div id="plainte-detail-view" style="display:none"></div>
