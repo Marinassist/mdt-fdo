@@ -909,6 +909,18 @@ body.readonly-mode .sbar .btn-p:not([onclick*="showPlainteForm"]),body.readonly-
 <!-- RIGHT PANEL -->
 </div></div>
 
+<div id="shift-check-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.8);z-index:99999;align-items:center;justify-content:center">
+<div style="background:var(--d7);border:2px solid var(--wrn);padding:30px;border-radius:10px;text-align:center;width:400px;max-width:90vw;animation:pulse 2s infinite">
+<div style="font-size:2.5rem;margin-bottom:12px">⏱️</div>
+<h2 style="font-family:'Orbitron',monospace;font-size:1rem;letter-spacing:2px;margin-bottom:8px;color:var(--wrn)">VÉRIFICATION DE SERVICE</h2>
+<p style="font-size:.86rem;color:var(--txt);margin-bottom:6px">Êtes-vous toujours en service ?</p>
+<p style="font-size:.72rem;color:var(--dim);margin-bottom:20px">Sans réponse dans 2 minutes, votre service sera automatiquement terminé.</p>
+<div style="display:flex;gap:12px;justify-content:center">
+<button class="btn btn-g" style="font-size:.9rem;padding:10px 24px" onclick="confirmStillOnDuty()">✓ OUI, EN SERVICE</button>
+<button class="btn btn-d" style="font-size:.9rem;padding:10px 24px" onclick="endShift();toast('Service terminé','info')">⏹ FIN DE SERVICE</button>
+</div>
+</div></div>
+
 <div id="rpanel" style="display:none"></div>
 <!-- PROFILE MODAL -->
 <div class="modal-ov" id="prof-modal" onclick="if(event.target===this)this.classList.remove('show')">
@@ -1137,7 +1149,7 @@ DB.dojDossiers=[];
 
 function saveSession(extra){var sess={CU:CU};if(extra)sess.extra=extra;localStorage.setItem('mdt-session',JSON.stringify(sess))}
 function clearSession(){localStorage.removeItem('mdt-session')}
-function logout(){clearSession();if(_syncInterval){clearInterval(_syncInterval);_syncInterval=null}document.body.className='';document.getElementById('main-interface').style.display='none';document.getElementById('login-screen').style.display='flex';document.getElementById('username').value='';document.getElementById('password').value='';CU=null;toast('Déconnecté','info')}
+function logout(){if(shiftStart)endShift();clearSession();if(_syncInterval){clearInterval(_syncInterval);_syncInterval=null}document.body.className='';document.getElementById('main-interface').style.display='none';document.getElementById('login-screen').style.display='flex';document.getElementById('username').value='';document.getElementById('password').value='';CU=null;toast('Déconnecté','info')}
 async function restoreSession(){var raw=localStorage.getItem('mdt-session');if(!raw)return false;try{var sess=JSON.parse(raw);if(!sess.CU)return false;CU=sess.CU;if(CU.type==='LSPD'&&CU.agId){var a=DB.agents[CU.agId];if(!a){clearSession();return false}setupLSPD();return true}if(CU.type==='DOJ'){setupDOJ();return true}if(CU.type==='LEGAL'&&CU.legalId){var leg=(DB.legalAccounts||[]).find(function(x){return x.id===CU.legalId});if(!leg){clearSession();return false}setupLegal(leg);return true}clearSession();return false}catch(e){clearSession();return false}}
 
 async function attemptLogin(){
@@ -1187,7 +1199,7 @@ const myCases=2,myReports=a.stats.reports;const mySan=DB.sanctions.filter(s=>s.a
 const weekH=getWeekHours(a.id);
 document.getElementById('pf-stats').innerHTML=`<div class="pmst"><div class="pmv">${a.stats.arrests.toLocaleString()}</div><div class="pml">ARRESTATIONS</div></div><div class="pmst"><div class="pmv">${weekH}h</div><div class="pml">HEURES/SEM</div></div><div class="pmst"><div class="pmv">${myReports}</div><div class="pml">RAPPORTS</div></div><div class="pmst"><div class="pmv" style="color:var(--red)">${mySan}</div><div class="pml">SANCTIONS</div></div>`;
 document.getElementById('pf-certs').innerHTML=DB.certs.filter(c=>c.agId===a.id&&c.status==='Validé').map(c=>`<span class="pmcert">🎖️ ${c.cert}</span>`).join('')}
-renderAll();startSync();if(CU.rank==='Chief')syncAuth();saveSession()}
+renderAll();startSync();if(CU.rank==='Chief')syncAuth();saveSession();restoreShift()}
 
 function setupDOJ(){
 var jName=CU.judgeName||'Wright';
@@ -1209,26 +1221,65 @@ function getWeekHours(agId){
 const now=new Date();const weekAgo=new Date(now);weekAgo.setDate(weekAgo.getDate()-7);
 return DB.shifts.filter(s=>s.agId===agId&&new Date(s.start)>=weekAgo&&s.end).reduce((t,s)=>{const dur=(new Date(s.end)-new Date(s.start))/3600000;return t+Math.round(dur*10)/10},0)}
 
+var _shiftCheckInterval=null,_shiftPopupTimeout=null;
 function toggleShift(){
-if(shiftStart){
-const end=new Date();const dur=Math.round((end-shiftStart)/60000);
-DB.shifts.push({id:'sh'+Date.now(),agId:CU.agId,start:shiftStart.toISOString(),end:end.toISOString(),dur});
+if(shiftStart){endShift()}
+else{
+shiftStart=new Date();
+localStorage.setItem('mdt-shift-start',shiftStart.toISOString());
+localStorage.setItem('mdt-shift-agId',CU.agId||'');
+document.getElementById('shift-label').textContent='FIN DE SERVICE';
+document.getElementById('shift-btn').classList.add('shift-on');
+document.getElementById('shift-status-text').textContent='EN SERVICE DEPUIS '+shiftStart.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+document.getElementById('shift-start-btn').innerHTML='⏹ FIN DE SERVICE';
+document.getElementById('shift-start-btn').className='btn btn-d';
+startShiftTimer();
+startShiftCheck();
+toast('Service commencé','success')}}
+function endShift(){
+if(!shiftStart)return;
+var end=new Date();var dur=Math.round((end-shiftStart)/60000);
+DB.shifts.push({id:'sh'+Date.now(),agId:CU?CU.agId:'',start:shiftStart.toISOString(),end:end.toISOString(),dur:dur});
 shiftStart=null;clearInterval(shiftInterval);shiftInterval=null;
+clearInterval(_shiftCheckInterval);_shiftCheckInterval=null;
+clearTimeout(_shiftPopupTimeout);_shiftPopupTimeout=null;
+localStorage.removeItem('mdt-shift-start');localStorage.removeItem('mdt-shift-agId');
 document.getElementById('shift-label').textContent='PRISE DE SERVICE';
 document.getElementById('shift-btn').classList.remove('shift-on');
 document.getElementById('shift-timer').textContent='00:00:00';
 document.getElementById('shift-status-text').textContent='HORS SERVICE';
 document.getElementById('shift-start-btn').innerHTML='▶ PRENDRE SON SERVICE';
 document.getElementById('shift-start-btn').className='btn btn-g';
-saveDB();rShifts();renderAll()
-}else{
-shiftStart=new Date();
+var popup=document.getElementById('shift-check-popup');if(popup)popup.style.display='none';
+saveDB();rShifts();renderAll()}
+function startShiftTimer(){
+clearInterval(shiftInterval);
+shiftInterval=setInterval(function(){if(!shiftStart)return;var d=Math.floor((Date.now()-shiftStart.getTime())/1000);var h=String(Math.floor(d/3600)).padStart(2,'0');var m=String(Math.floor((d%3600)/60)).padStart(2,'0');var s=String(d%60).padStart(2,'0');document.getElementById('shift-timer').textContent=h+':'+m+':'+s},1000)}
+function startShiftCheck(){
+clearInterval(_shiftCheckInterval);
+_shiftCheckInterval=setInterval(function(){showShiftCheckPopup()},3600000)}
+function showShiftCheckPopup(){
+var popup=document.getElementById('shift-check-popup');if(!popup)return;
+popup.style.display='flex';
+clearTimeout(_shiftPopupTimeout);
+_shiftPopupTimeout=setTimeout(function(){var p=document.getElementById('shift-check-popup');if(p&&p.style.display==='flex'){endShift();toast('Service terminé automatiquement (pas de réponse)','warning')}},120000)}
+function confirmStillOnDuty(){
+document.getElementById('shift-check-popup').style.display='none';
+clearTimeout(_shiftPopupTimeout);_shiftPopupTimeout=null;
+toast('Service confirmé','success')}
+function restoreShift(){
+var saved=localStorage.getItem('mdt-shift-start');
+var agId=localStorage.getItem('mdt-shift-agId');
+if(!saved)return;
+if(CU&&CU.agId&&agId===CU.agId){
+shiftStart=new Date(saved);
 document.getElementById('shift-label').textContent='FIN DE SERVICE';
 document.getElementById('shift-btn').classList.add('shift-on');
 document.getElementById('shift-status-text').textContent='EN SERVICE DEPUIS '+shiftStart.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
 document.getElementById('shift-start-btn').innerHTML='⏹ FIN DE SERVICE';
 document.getElementById('shift-start-btn').className='btn btn-d';
-shiftInterval=setInterval(()=>{const d=Math.floor((Date.now()-shiftStart)/1000);const h=String(Math.floor(d/3600)).padStart(2,'0');const m=String(Math.floor((d%3600)/60)).padStart(2,'0');const s=String(d%60).padStart(2,'0');document.getElementById('shift-timer').textContent=h+':'+m+':'+s},1000)}}
+startShiftTimer();startShiftCheck()}
+else{localStorage.removeItem('mdt-shift-start');localStorage.removeItem('mdt-shift-agId')}}
 
 function rShifts(){
 const agId=CU?.agId;if(!agId)return;
