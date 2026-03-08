@@ -223,7 +223,7 @@ body.readonly-mode .sbar .btn-p:not([onclick*="showPlainteForm"]),body.readonly-
 <div class="ni" onclick="nav('laws',this)">📖 Code Pénal</div>
 <div class="ni allnav" onclick="nav('settings',this)">⚙️ Paramètres</div>
 </div>
-<div class="suser"><div class="savatar">👤</div><div><div class="sname" id="sname">—</div><div class="srank" id="srank">—</div></div></div>
+<div class="suser"><div class="savatar">👤</div><div style="flex:1"><div class="sname" id="sname">—</div><div class="srank" id="srank">—</div></div><button onclick="logout()" style="background:none;border:1px solid rgba(239,68,68,.3);color:var(--red);font-size:.6rem;padding:4px 8px;border-radius:3px;cursor:pointer;font-family:'Share Tech Mono',monospace" title="Déconnexion">⏻</button></div>
 </nav>
 <div id="sb-overlay" onclick="document.querySelector('.sidebar').classList.remove('open');this.classList.remove('show')" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:997"></div>
 
